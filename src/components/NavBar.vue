@@ -3,10 +3,10 @@
     <router-link to="/" class="navbar-logo">ThoughtCraft</router-link>
     <ul class="navbar-links">
       <li><router-link to="/posts">Blog</router-link></li>
-      <li><router-link to="/register">Register</router-link></li>
-      <li><router-link to="/login">Login</router-link></li>
+      <li v-if="!isAuthenticated"><router-link to="/register">Register</router-link></li>
+      <li v-if="!isAuthenticated"><router-link to="/login">Login</router-link></li>
       <li><router-link to="/about">About</router-link></li>
-      <button @click="showLogoutConfirm = true" class="logout-button">Logout</button>
+      <button v-if="isAuthenticated" @click="showLogoutConfirm = true" class="logout-button">Logout</button>
     </ul>
 
     <div v-if="showLogoutConfirm" class="modal-overlay">
@@ -26,9 +26,16 @@ export default {
       showLogoutConfirm: false,
     };
   },
+   computed: {
+    isAuthenticated() {
+      return localStorage.getItem('authToken');
+    },
+  },
   methods: {
     logout() {
-      localStorage.removeItem('authToken'); 
+      localStorage.removeItem('authToken');
+      localStorage.removeItem('userId');
+      localStorage.removeItem('userName'); 
       this.showLogoutConfirm = false; 
       this.$router.push('/'); 
     }

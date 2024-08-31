@@ -58,7 +58,7 @@ export default {
   },
   computed: {
     comments() {
-      return this.post ? this.post.comments : [];
+      return this.post ? this.post.comments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) : [];
     },
   },
   async created() {
@@ -130,14 +130,14 @@ export default {
         console.error('Error deleting comment:', error);
       }
     },
-    cancelDelete() {
-      this.showDeleteModal = false;
-      this.confirmedDeleteId = null;
-    },
-    isCommentAuthor(comment) {
-      const loggedInUserId = localStorage.getItem('userId');
-      return comment.user.id === parseInt(loggedInUserId);
-    },
+      cancelDelete() {
+        this.showDeleteModal = false;
+        this.confirmedDeleteId = null;
+      },
+      isCommentAuthor(comment) {
+        const loggedInUserId = localStorage.getItem('userId');
+        return comment.user.id === parseInt(loggedInUserId);
+      },
     isPostAuthor() {
       const loggedInUserId = localStorage.getItem('userId');
       return this.post && this.post.user.id === parseInt(loggedInUserId);

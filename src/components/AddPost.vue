@@ -10,6 +10,10 @@
         <label for="content">Content:</label>
         <textarea id="content" v-model="content" required></textarea>
       </div>
+      <div class="form-group">
+        <label for="image">Upload Image:</label>
+        <input type="file" id="image" @change="handleImageUpload" />
+      </div>
       <div class="button-group">
         <button type="submit" class="submit-button">Submit</button>
       </div>
@@ -26,22 +30,32 @@ export default {
     return {
       title: '',
       content: '',
+      image: null,  
     };
   },
   methods: {
+    handleImageUpload(event) {
+      this.image = event.target.files[0]; 
+    },
     async submitPost() {
+      const formData = new FormData();
+      formData.append('title', this.title);
+      formData.append('content', this.content);
+      if (this.image) {
+        formData.append('image', this.image); 
+      }
+
       try {
-        await axios.post(`${import.meta.env.VITE_API_URL}/posts`, {
-          title: this.title,
-          content: this.content,
-        }, {
+        await axios.post(`${import.meta.env.VITE_API_URL}/posts`, formData, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+            'Content-Type': 'multipart/form-data', 
           },
         });
         this.$emit('post-created');
         this.title = '';
         this.content = '';
+        this.image = null;
       } catch (error) {
         console.error('Error creating post:', error);
       }
