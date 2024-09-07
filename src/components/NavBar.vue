@@ -24,12 +24,12 @@ export default {
   data() {
     return {
       showLogoutConfirm: false,
+      isAuthenticated: false,
     };
   },
-   computed: {
-    isAuthenticated() {
-      return localStorage.getItem('authToken');
-    },
+   mounted(){
+    if (localStorage.getItem('authToken'))
+      this.isAuthenticated =true ;
   },
   methods: {
     logout() {
@@ -37,6 +37,7 @@ export default {
       localStorage.removeItem('userId');
       localStorage.removeItem('userName'); 
       this.showLogoutConfirm = false; 
+      this.isAuthenticated = false;
       this.$router.push('/'); 
     }
   }

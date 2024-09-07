@@ -11,11 +11,30 @@
       </div>
       
       <div class="post-content" v-html="post.content"></div>
+      
       <div class="post-actions">
         <button v-if="isPostAuthor" @click="enableEditMode">Edit</button>
         <button v-if="isPostAuthor" @click="confirmDelete">Delete</button>
       </div>
+      
+      <div class="like-section">
+        <LikeSection 
+          :postSlug="post.slug" 
+          :initialLikesCount="post.likes_count" 
+          :likedByUser="post.liked_by_user"
+          @like-toggled="fetchPost" 
+        />
+        <button @click="toggleLikesList" class="likes-list-btn">
+          {{ showLikesList ? 'Hide Likes' : 'Show Likes' }}
+        </button>
+        <div v-if="showLikesList" class="likes-list">
+          <ul>
+            <li v-for="user in post.likes" :key="user.id">{{ user.name }}</li>
+          </ul>
+        </div>
+      </div>
     </div>
+    
     <EditPost v-if="isEditing" :post="post" @saved="exitEditMode" @cancelled="exitEditMode" />
     <CommentSection v-if="post" :post="post" @refresh-comments="fetchPost" />
 
@@ -35,12 +54,13 @@
 import axios from 'axios';
 import EditPost from '../components/EditPost.vue';
 import CommentSection from '../components/CommentSection.vue';
-
+import LikeSection from '../components/LikeSection.vue';
 export default {
   name: 'PostDetails',
   components: {
     EditPost,
     CommentSection,
+    LikeSection,
   },
   data() {
     return {
@@ -48,6 +68,7 @@ export default {
       isEditing: false,
       isPostAuthor: false,
       showDeleteModal: false,
+      showLikesList: false,
     };
   },
   async created() {
@@ -70,6 +91,22 @@ export default {
         console.error('Error fetching post:', error);
       }
     },
+    async toggleLike() {
+      const postSlug = this.post.slug;
+      try {
+        await axios.post(`${import.meta.env.VITE_API_URL}/posts/like/${postSlug}`, {}, {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('authToken')}`,
+          },
+        });
+        await this.fetchPost();
+      } catch (error) {
+        console.error('Error liking post:', error);
+      }
+    },
+    toggleLikesList() {
+      this.showLikesList = !this.showLikesList;
+    },
     enableEditMode() {
       this.isEditing = true;
     },
@@ -90,11 +127,11 @@ export default {
       } catch (error) {
         console.error('Error deleting post:', error);
       } finally {
-        this.showDeleteModal = false; 
+        this.showDeleteModal = false;
       }
     },
     cancelDelete() {
-      this.showDeleteModal = false; 
+      this.showDeleteModal = false;
     },
   },
 };
@@ -160,6 +197,78 @@ button:last-of-type {
 
 button:last-of-type:hover {
   background-color: #c82333;
+}
+
+.like-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.like-section button {
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+.like-icon {
+  font-size: 1.5em;
+  color: #e74c3c;
+  cursor: pointer;
+  transition: color 0.3s;
+}
+
+.like-icon.liked {
+  color: #c0392b;
+}
+
+.like-count {
+  font-size: 1em;
+  color: #333;
+}
+
+.likes-list-btn {
+  display: inline-block;
+  background-color: #e74c3c !important; 
+  color: #fff !important; 
+  padding: 5px 10px !important; 
+  border: none !important;
+  border-radius: 4px !important; 
+  cursor: pointer !important;
+  font-size: 0.9em !important;
+  text-decoration: none !important; 
+  transition: background-color 0.3s, color 0.3s !important; 
+}
+
+.likes-list-btn:hover {
+  background-color: #c0392b !important;
+}
+
+.likes-list {
+  display: block;
+  margin-top: 10px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+}
+
+.likes-list ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.likes-list li {
+  font-size: 0.9em;
+  color: #555;
+  padding: 4px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.likes-list li:last-of-type {
+  border-bottom: none;
 }
 
 .modal-overlay {

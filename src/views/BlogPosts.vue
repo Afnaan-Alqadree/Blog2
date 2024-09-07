@@ -2,6 +2,13 @@
   <div class="blog-posts">
     <h1>Blog Posts</h1>
     <input type="text" v-model="searchQuery" placeholder="Search posts..." class="search-bar" />
+    <div class="sorting-options">
+        <label for="sort">Sort by:</label>
+        <select v-model="sortOrder" @change="sortPosts">
+         <option value="asc">Oldest</option>
+         <option value="desc">Newest</option>
+       </select>
+      </div>
     <div v-if="!isLoggedIn">
       <router-link to="/login">Login</router-link>
     </div>
@@ -20,16 +27,28 @@
         <p>No posts available.</p>
       </div>
       <div v-else class="post-grid">
-        <div v-for="post in filteredPosts" :key="post.slug" class="post-card">
+        <div v-for="post in sortedPosts" :key="post.slug" class="post-card">
           <img :src="post.image || defaultImage" alt="Post image" class="post-img" />
           <h2 class="post-title">{{ post.title }}</h2>
           <p class="post-author">Author: {{ post.user.name }}</p>
-          <p class="post-comments">Comments: {{ post.comments_count }}</p>
           <div class="post-actions">
             <router-link :to="`/posts/${post.slug}`" class="post-link">
               <button class="view-post-button">View Post</button>
             </router-link>
             <button v-if="isAuthor(post)" @click="confirmDelete(post.slug)" class="delete-post-button">Delete Post</button>
+            <div class="icons-container">
+              <div class="like-section">
+                <LikeSection
+                  :postSlug="post.slug"
+                  :initialLikesCount="post.likes_count"
+                  :likedByUser="post.liked_by_user"
+                />
+              </div>
+              <div class="comment-section">
+                <span class="comment-icon">&#128172;</span> 
+                <span class="comment-count">{{ post.comments_count }}</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -55,13 +74,21 @@
 import axios from 'axios';
 import AddPost from '../components/AddPost.vue'; 
 import Pagination from '../components/Pagination.vue';
+import LikeSection from '../components/LikeSection.vue';
 import defaultImage from '../assets/default.jpg';
 
 export default {
+  props: {
+    comments_count: {
+      type: Number,
+      default: 0,
+    },
+  },
   name: 'BlogPosts',
   components: {
     AddPost,
     Pagination,
+    LikeSection,
   },
   data() {
     return {
@@ -73,7 +100,13 @@ export default {
       postToDelete: null,
       showDeleteModal: false,
       defaultImage,
+      sortOrder: 'desc',
     };
+  },
+  watch: {                     //ensure the fetchPosts method is called whenever the search query changes.
+    searchQuery(newQuery) {
+      this.fetchPosts();
+    }
   },
   computed: {
     filteredPosts() {
@@ -84,6 +117,15 @@ export default {
           post.title.toLowerCase().includes(lowercasedQuery) ||
           (post.description && post.description.toLowerCase().includes(lowercasedQuery))
       );
+    },
+    sortedPosts() {
+      return this.filteredPosts.sort((a, b) => {
+        if (this.sortOrder === 'asc') {
+          return new Date(a.created_at) - new Date(b.created_at);  // Ascending order
+        } else {
+          return new Date(b.created_at) - new Date(a.created_at);// Descending order
+        }
+      });
     },
   },
   async created() {
@@ -101,9 +143,14 @@ export default {
       this.showAddPostForm = !this.showAddPostForm;
     },
     async fetchPosts(page = 1) {
-       this.currentPage = page;
+      this.currentPage = page;
       try {
-        const response = await axios.get(`${import.meta.env.VITE_API_URL}/posts?page=${page}`, {
+        const response = await axios.get(`${import.meta.env.VITE_API_URL}/posts`, {
+          params: {
+            page: page,
+            search: this.searchQuery,           // Include the search query here
+           sort_order: this.sortOrder,      // Add sorting parameter
+          },
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
@@ -221,13 +268,6 @@ h1 {
   font-style: italic;
   margin-bottom: 15px;
 }
-
-.post-comments {
-  font-family: 'Roboto', sans-serif;
-  color: #555;
-  margin-bottom: 15px;
-}
-
 .post-link {
   text-decoration: none;
 }
@@ -257,6 +297,22 @@ button:hover {
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
+.icons-container {
+  display: flex;
+  align-items: center;
+  gap: 10px; 
+  margin-left: auto; 
+}
+.comment-icon {
+  font-size: 1.0em;
+  position: relative;
+  top: 4px;
+}
+.comment-count {
+  font-size: 1em;
+  position: relative;
+  top: 4px; 
+}
 .modal-overlay {
   position: fixed;
   top: 0;
