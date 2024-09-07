@@ -47,6 +47,7 @@
               <div class="comment-section">
                 <span class="comment-icon">&#128172;</span> 
                 <span class="comment-count">{{ post.comments_count }}</span>
+                <span v-if="post.last_comment" class="last-comment">Latest: {{ post.last_comment.content }}</span>
               </div>
             </div>
           </div>
@@ -312,6 +313,12 @@ button:hover {
   font-size: 1em;
   position: relative;
   top: 4px; 
+}
+.last-comment {
+  font-size: 1em;
+  color: #555;
+  margin-left: 10px;
+   margin-top: 10px;
 }
 .modal-overlay {
   position: fixed;
