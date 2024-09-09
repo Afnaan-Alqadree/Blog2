@@ -113,9 +113,7 @@ export default {
   //   },
   // },
   watch: {              
-    searchQuery: _.debounce(function() {
-      this.fetchPosts();
-    }, 500),
+    searchQuery: _.debounce(function() {  this.fetchPosts();}, 500),
   },
   computed: {
     filteredPosts() {
