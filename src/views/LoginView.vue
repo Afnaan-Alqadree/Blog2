@@ -27,13 +27,8 @@ import axios from 'axios';
 
 const email = ref('');
 const password = ref('');
-
-
 const errorMessage = ref('');
-
 const apiUrl =import.meta.env.VITE_API_URL;
-
-
 const router = useRouter();
 
 const login = async () => {

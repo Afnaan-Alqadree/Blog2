@@ -27,7 +27,7 @@ export default {
       isAuthenticated: false,
     };
   },
-   mounted(){
+  mounted(){
     if (localStorage.getItem('authToken'))
       this.isAuthenticated =true ;
   },
@@ -39,7 +39,7 @@ export default {
       this.showLogoutConfirm = false; 
       this.isAuthenticated = false;
       this.$router.push('/'); 
-    }
+    },
   }
 };
 </script>

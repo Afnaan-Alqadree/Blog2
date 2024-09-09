@@ -1,8 +1,37 @@
+
+<template>
+  <div class="register">
+    <h1>Register</h1>
+    <form @submit.prevent="register">
+      <div>
+        <label for="email">Email:</label>
+        <input type="email" id="email" v-model="email" required />
+      </div>
+       <div>
+        <label for="name">Name:</label>
+        <input type="text" id="name" v-model="name" required />
+      </div>
+      <div>
+        <label for="password">Password:</label>
+        <input type="password" id="password" v-model="password" required />
+      </div>
+      <div>
+        <label for="confirmpassword">Confirm Password:</label>
+        <input type="password" id="confirmedPassword" v-model="confirmedPassword" required />
+      </div>
+      <button type="submit">Register</button>
+    </form>
+    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+    <p>
+      Already have an account? <RouterLink to="/login">Go to Login</RouterLink>
+    </p>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import axios from 'axios';
-import { type Register } from '../api/ToDoListApi';
 
 
 const email = ref('');
@@ -42,34 +71,6 @@ const register = async () => {
 
 };
 </script>
-<template>
-  <div class="register">
-    <h1>Register</h1>
-    <form @submit.prevent="register">
-      <div>
-        <label for="email">Email:</label>
-        <input type="email" id="email" v-model="email" required />
-      </div>
-       <div>
-        <label for="name">Name:</label>
-        <input type="text" id="name" v-model="name" required />
-      </div>
-      <div>
-        <label for="password">Password:</label>
-        <input type="password" id="password" v-model="password" required />
-      </div>
-      <div>
-        <label for="confirmpassword">Confirm Password:</label>
-        <input type="password" id="confirmedPassword" v-model="confirmedPassword" required />
-      </div>
-      <button type="submit">Register</button>
-    </form>
-    <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-    <p>
-      Already have an account? <RouterLink to="/login">Go to Login</RouterLink>
-    </p>
-  </div>
-</template>
 
 <style scoped>
 .register {

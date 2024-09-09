@@ -4,7 +4,7 @@
     <input type="text" v-model="searchQuery" placeholder="Search posts..." class="search-bar" />
     <div class="sorting-options">
         <label for="sort">Sort by:</label>
-        <select v-model="sortOrder" @change="sortPosts">
+        <select v-model="sortOrder" @change="fetchPosts(1,sortOrder)">
          <option value="asc">Oldest</option>
          <option value="desc">Newest</option>
        </select>
@@ -23,11 +23,11 @@
         <AddPost @post-created="fetchPosts" />
       </div>
 
-      <div v-if="filteredPosts.length === 0">
+      <div v-if="Posts.length === 0">
         <p>No posts available.</p>
       </div>
       <div v-else class="post-grid">
-        <div v-for="post in sortedPosts" :key="post.slug" class="post-card">
+        <div v-for="post in Posts" :key="post.slug" class="post-card">
           <img :src="post.image || defaultImage" alt="Post image" class="post-img" />
           <h2 class="post-title">{{ post.title }}</h2>
           <p class="post-author">Author: {{ post.user.name }}</p>
@@ -47,9 +47,10 @@
               <div class="comment-section">
                 <span class="comment-icon">&#128172;</span> 
                 <span class="comment-count">{{ post.comments_count }}</span>
-                <span v-if="post.last_comment" class="last-comment">Latest: {{ post.last_comment.content }}</span>
               </div>
             </div>
+            <hr>
+            <span v-if="post.last_comment" class="last-comment">Latest: {{ post.last_comment.content }}</span>
           </div>
         </div>
       </div>
@@ -103,20 +104,15 @@ export default {
       showDeleteModal: false,
       defaultImage,
       sortOrder: 'desc',
-       searchTimeout: null, 
     };
   },
-  // watch: {                      //ensure the fetchPosts method is called whenever the search query changes.
-  //   searchQuery(newQuery) {
-  //     clearTimeout(this.searchTimeout);
-  //     this.searchTimeout = setTimeout(() => { this.fetchPosts();}, 500); 
-  //   },
-  // },
   watch: {              
-    searchQuery: _.debounce(function() {  this.fetchPosts();}, 500),
+    searchQuery: _.debounce(function() {
+      this.fetchPosts();
+    }, 500),
   },
   computed: {
-    filteredPosts() {
+    Posts() {
       if (!this.searchQuery) return this.posts;
       const lowercasedQuery = this.searchQuery.toLowerCase();
       return this.posts.filter(
@@ -124,15 +120,6 @@ export default {
           post.title.toLowerCase().includes(lowercasedQuery) ||
           (post.description && post.description.toLowerCase().includes(lowercasedQuery))
       );
-    },
-    sortedPosts() {
-      return this.filteredPosts.sort((a, b) => {
-        if (this.sortOrder === 'asc') {
-          return new Date(a.created_at) - new Date(b.created_at);  // Ascending order
-        } else {
-          return new Date(b.created_at) - new Date(a.created_at);// Descending order
-        }
-      });
     },
   },
   async created() {
@@ -149,14 +136,14 @@ export default {
     toggleAddPostForm() {
       this.showAddPostForm = !this.showAddPostForm;
     },
-    async fetchPosts(page = 1) {
+    async fetchPosts(page = 1, sort = 'desc') {
       this.currentPage = page;
       try {
         const response = await axios.get(`${import.meta.env.VITE_API_URL}/posts`, {
           params: {
             page: page,
             search: this.searchQuery,           // Include the search query here
-           sort_order: this.sortOrder,      // Add sorting parameter
+           sort: sort,      // Add sorting parameter
           },
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
@@ -278,7 +265,6 @@ h1 {
 .post-link {
   text-decoration: none;
 }
-
 button {
   padding: 10px 20px;
   border: none;
@@ -289,11 +275,9 @@ button {
   color: white;
   transition: background-color 0.3s ease;
 }
-
 button:hover {
   background-color: #c82333;
 }
-
 .search-bar {
   width: 300px;
   padding: 10px;
@@ -303,7 +287,6 @@ button:hover {
   border-radius: 4px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
-
 .icons-container {
   display: flex;
   align-items: center;

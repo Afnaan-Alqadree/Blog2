@@ -61,9 +61,7 @@ export default {
       return this.post ? this.post.comments.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)) : [];
     },
   },
-  async created() {
-    await this.fetchComments();
-  },
+  
   methods: {
     async fetchComments() {
       try {
@@ -77,6 +75,7 @@ export default {
       try {
         await axios.post(`${import.meta.env.VITE_API_URL}/posts/${this.post.slug}/comments`, {
           content: this.newComment,
+          //returning Parentid
         }, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,

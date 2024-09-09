@@ -39,6 +39,7 @@ export default {
             Authorization: `Bearer ${localStorage.getItem('authToken')}`,
           },
         });
+        this.$emit('like-toggled');
         this.isLiked = !this.isLiked; // Toggle the like state
         this.likesCount += this.isLiked ? 1 : -1; // Adjust the likes count accordingly
       } catch (error) {
