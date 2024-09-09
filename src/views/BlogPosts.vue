@@ -77,6 +77,7 @@ import AddPost from '../components/AddPost.vue';
 import Pagination from '../components/Pagination.vue';
 import LikeSection from '../components/LikeSection.vue';
 import defaultImage from '../assets/default.jpg';
+import _ from 'lodash';
 
 export default {
   props: {
@@ -102,12 +103,19 @@ export default {
       showDeleteModal: false,
       defaultImage,
       sortOrder: 'desc',
+       searchTimeout: null, 
     };
   },
-  watch: {                     //ensure the fetchPosts method is called whenever the search query changes.
-    searchQuery(newQuery) {
+  // watch: {                      //ensure the fetchPosts method is called whenever the search query changes.
+  //   searchQuery(newQuery) {
+  //     clearTimeout(this.searchTimeout);
+  //     this.searchTimeout = setTimeout(() => { this.fetchPosts();}, 500); 
+  //   },
+  // },
+  watch: {              
+    searchQuery: _.debounce(function() {
       this.fetchPosts();
-    }
+    }, 500),
   },
   computed: {
     filteredPosts() {
